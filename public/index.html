@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Laptopen</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <!-- Header -->
+    <div class="jumbotron jumbotron-fluid" id="jumbo">
+        <div class="container">
+            <h1 class="display-4">Add users</h1>
+        </div>
+    </div>
+    <!-- Main -->
+    <div class="container">
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addModal">Add user</button>
+    </div>
+    <!-- Add Modal -->
+    <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add new user</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Firstname</label>
+                            <input type="text" class="form-control" id="firstname">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Lastname</label>
+                            <input type="text" class="form-control" id="lastname">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Email address</label>
+                            <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">Password</label>
+                            <input type="password" class="form-control" id="password">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="btnSubmit" type="button" class="btn btn-success">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit user</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">ID</label>
+                            <input type="text" class="form-control" id="id_edit" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Firstname</label>
+                            <input type="text" class="form-control" id="firstname_edit">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Lastname</label>
+                            <input type="text" class="form-control" id="lastname_edit">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Email address</label>
+                            <input type="email" class="form-control" id="email_edit" aria-describedby="emailHelp">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">Password</label>
+                            <input type="password" class="form-control" id="password_edit">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="confirmEdit" type="button" class="btn btn-success">Edit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table content -->
+    <div class="container">
+        <br>
+        <table class="table">
+            <thead class="thead-light">
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Firstname</th>
+                    <th scope="col">Lastname</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Password</th>
+                    <th scope="col">Delete</th>
+                    <th scope="col">Edit</th>
+                </tr>
+            </thead>
+            <tbody id="tableContent">
+            </tbody>
+        </table>
+    </div>
+    <script>
+        $(document).ready(function () {
+            getUsers();
+
+            $('#btnSubmit').click((e) => {
+                const data = {
+                    firstname: $('#firstname').val(),
+                    lastname: $('#lastname').val(),
+                    email: $('#email').val(),
+                    password: $('#password').val()
+                }
+                console.log(data);
+                $.ajax({
+                    type: 'POST',
+                    url: 'http://localhost:3000/users/add',
+                    data: data,
+                    success: (data) => {
+                        console.log(data);
+                        getUsers();
+                        $('#addModal').modal('hide');
+                        $('#firstname').val('');
+                        $('#lastname').val('');
+                        $('#email').val('');
+                        $('#password').val('');
+                    },
+                    error: (error) => {
+                        console.log(error);
+                    }
+                })
+            })
+
+            $('table tbody').on('click', '#btnDelete', function () {
+            const currow = $(this).closest('tr');
+            const id = currow.find('td:eq(0)').text();
+
+            $.ajax({
+                type: 'DELETE',
+                url: 'http://localhost:3000/users/delete/' + id,
+                success: () => {
+                    getUsers();
+                    console.log(id);
+                }
+            })
+        });
+
+        $('table tbody').on('click', '#btnEdit', function () {
+            const currow = $(this).closest('tr');
+            const id = currow.find('td:eq(0)').text();
+            const firstName = currow.find('td:eq(1)').text();
+            const lastName = currow.find('td:eq(2)').text();
+            const email = currow.find('td:eq(3)').text();
+            const password = currow.find('td:eq(4)').text();
+
+            $('#id_edit').val(id);
+            $('#firstname_edit').val(firstName);
+            $('#lastname_edit').val(lastName);
+            $('#email_edit').val(email);
+            $('#password_edit').val(password);
+        });
+
+        $('#confirmEdit').click((e) => {
+
+            const userData = {
+                    firstname: $('#firstname_edit').val(),
+                    lastname: $('#lastname_edit').val(),
+                    email: $('#email_edit').val(),
+                    password: $('#password_edit').val()
+                }
+            
+            const id = $('#id_edit').val();
+               $.ajax({
+                type : 'put',
+                url : 'http://localhost:3000/users/update/' + id,
+                data : userData,
+                success : () => {
+                    $('#editModal').modal('hide');
+                    getUsers();
+                }
+            })
+        });
+        });
+
+        const getUsers = () => {
+            $.ajax({
+                type: 'GET',
+                url: 'http://localhost:3000/users/users',
+                success: (usersData) => {
+                    console.log(usersData);
+                    $('#tableContent').empty();
+                    usersData.forEach(user => {
+                        $('#tableContent').append(
+                            '<tr>' +
+                            '<td>' + user.id + '</td>' +
+                            '<td>' + user.firstname + '</td>' +
+                            '<td>' + user.lastname + '</td>' +
+                            '<td>' + user.email + '</td>' +
+                            '<td>' + user.password + '</td>' +
+                            '<td><button id="btnDelete" class="btn btn-danger">Delete</button></td>' +
+                            '<td><button id="btnEdit" type="button" class="btn btn-warning" data-toggle="modal" data-target="#editModal">Edit</button></td>' +
+                            '</tr>'
+                        );
+                    });
+
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
