@@ -7,7 +7,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use('/users', userRoute);
 
-
+app.use(express.static('public/'));
 
 app.listen(3000, () => {
     console.log('Server is running');
